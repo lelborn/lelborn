@@ -7,4 +7,4 @@
   </picture>
 </a>
 
-*This profile is automatically generated and updated daily using GitHub Actions.*
+*This profile is automatically generated and updated daily using GitHub Actions...*
