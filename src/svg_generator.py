@@ -111,34 +111,33 @@ class SVGGenerator:
         Apply all text replacements to SVG content
         """
         # GitHub statistics replacements
-        content = content.replace(
-            "3145 commits, {Contributed: 133} • 503 Stars",
-            f"{formatted_data['commit_formatted']} commits, {{Contributed: {formatted_data['contrib_formatted']}}} • {formatted_data['star_formatted']} Stars"
-        )
+        content = content.replace("{COMMITS}", formatted_data['commit_formatted'])
+        content = content.replace("{CONTRIB}", formatted_data['contrib_formatted'])
+        content = content.replace("{STARS}", formatted_data['star_formatted'])
         
-        content = content.replace(
-            "61,361, {87,122++, 25,761--}",
-            f"{formatted_data['loc_total_formatted']}, {{{formatted_data['loc_add_formatted']}++, {formatted_data['loc_del_formatted']}--}}"
-        )
+        # LOC replacements
+        content = content.replace("{LOC_TOTAL}", formatted_data['loc_total_formatted'])
+        content = content.replace("{LOC_ADD}", formatted_data['loc_add_formatted'])
+        content = content.replace("{LOC_DEL}", formatted_data['loc_del_formatted'])
         
         # Age replacement
-        content = content.replace("33 years, 5 Months, 15 Days", age_data)
+        content = content.replace("{AGE}", age_data)
         
         # Environment replacements
         content = content.replace("macOS Sequoia (15.5 (24F74)) • VS Code (1.100.2)", 
                                 f"{config_data['environment_os']} ({config_data['environment_version']}) • {config_data['environment_editor']}")
         
         # Packaging languages replacement
-        content = content.replace("[TypeScript, Python, Go, React]", f"[{config_data['packaging_languages']}]")
+        content = content.replace("{LANGUAGES}", config_data['packaging_languages'])
         
         # Server region replacement
-        content = content.replace("Europe/London", config_data['server_region'])
+        content = content.replace("{SERVER_REGION}", config_data['server_region'])
         
         # Host replacement
-        content = content.replace("Marketplace Platforms", config_data['host_platform'])
+        content = content.replace("{HOST_PLATFORM}", config_data['host_platform'])
         
         # Social replacements
-        content = content.replace("linkedin.com/lewiselborn", config_data['social_linkedin'])
+        content = content.replace("{LINKEDIN}", config_data['social_linkedin'])
         content = content.replace("twitter.com/lelborn", config_data['social_twitter'])
         content = content.replace("lewiselborn.com", config_data['social_website'])
         content = content.replace("lewis@lewiselborn.com", config_data['social_email'])

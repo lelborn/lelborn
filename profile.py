@@ -111,12 +111,12 @@ class ProfileGenerator:
         self.performance_times['followers'] = follower_time
         format_performance_output('followers', follower_time)
         
-        # Get lines of code (placeholder for now)
+        # Get lines of code from GitHub API
         data['loc_data'], loc_time = measure_performance(self._get_lines_of_code)
         self.performance_times['lines_of_code'] = loc_time
         format_performance_output('lines of code', loc_time)
         
-        # Get commit count (placeholder for now)
+        # Get commit count from GitHub API
         data['commits'], commit_time = measure_performance(self._get_commit_count)
         self.performance_times['commits'] = commit_time
         format_performance_output('commits', commit_time)
@@ -133,14 +133,25 @@ class ProfileGenerator:
         return result, time_taken
     
     def _get_lines_of_code(self) -> List[int]:
-        """Get lines of code statistics (placeholder implementation)"""
-        # This would need to be implemented with the full LOC calculation logic
-        return [87122, 25761, 61361]  # [added, deleted, total]
+        """Get lines of code statistics from GitHub API"""
+        github_api = get_github_api()
+        # Get LOC data for owned repositories
+        loc_data = github_api.get_lines_of_code(['OWNER'])
+        # Return [added, deleted, total] format expected by SVG generator
+        return [loc_data[0], loc_data[1], loc_data[2]]
     
     def _get_commit_count(self) -> int:
-        """Get total commit count (placeholder implementation)"""
-        # This would need to be implemented with the full commit counting logic
-        return 3145
+        """Get total commit count from GitHub API"""
+        github_api = get_github_api()
+        # Get commit count for the last year
+        from datetime import datetime, timedelta
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=365)
+        
+        return github_api.get_commit_stats(
+            start_date.isoformat(),
+            end_date.isoformat()
+        )
     
     def _update_svg_files(self, data: dict) -> None:
         """Update SVG files with collected data"""

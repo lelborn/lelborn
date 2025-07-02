@@ -104,42 +104,81 @@ class GitHubAPI:
     
     def get_repository_stats(self, count_type: str, owner_affiliation: List[str], cursor: str = None) -> int:
         """Get repository statistics (count, stars, etc.)"""
-        query = '''
-        query ($owner_affiliation: [RepositoryAffiliation], $login: String!, $cursor: String) {
-            user(login: $login) {
-                repositories(first: 100, after: $cursor, ownerAffiliations: $owner_affiliation) {
-                    totalCount
-                    edges {
-                        node {
-                            ... on Repository {
-                                nameWithOwner
-                                stargazers {
-                                    totalCount
+        if count_type == 'repos':
+            # For repository count, we can use the totalCount directly
+            query = '''
+            query ($owner_affiliation: [RepositoryAffiliation], $login: String!, $cursor: String) {
+                user(login: $login) {
+                    repositories(first: 100, after: $cursor, ownerAffiliations: $owner_affiliation) {
+                        totalCount
+                        pageInfo {
+                            endCursor
+                            hasNextPage
+                        }
+                    }
+                }
+            }'''
+            
+            variables = {
+                'owner_affiliation': owner_affiliation,
+                'login': self.username,
+                'cursor': cursor
+            }
+            
+            result = self._make_request(query, variables, 'graph_repos_stars')
+            data = result['data']['user']['repositories']
+            return data['totalCount']
+            
+        elif count_type == 'stars':
+            # For star counting, we need to iterate through all repositories
+            return self._get_total_stars(owner_affiliation)
+    
+    def _get_total_stars(self, owner_affiliation: List[str]) -> int:
+        """Get total stars across all repositories with pagination"""
+        total_stars = 0
+        cursor = None
+        
+        while True:
+            query = '''
+            query ($owner_affiliation: [RepositoryAffiliation], $login: String!, $cursor: String) {
+                user(login: $login) {
+                    repositories(first: 100, after: $cursor, ownerAffiliations: $owner_affiliation) {
+                        edges {
+                            node {
+                                ... on Repository {
+                                    nameWithOwner
+                                    stargazers {
+                                        totalCount
+                                    }
                                 }
                             }
                         }
-                    }
-                    pageInfo {
-                        endCursor
-                        hasNextPage
+                        pageInfo {
+                            endCursor
+                            hasNextPage
+                        }
                     }
                 }
+            }'''
+            
+            variables = {
+                'owner_affiliation': owner_affiliation,
+                'login': self.username,
+                'cursor': cursor
             }
-        }'''
+            
+            result = self._make_request(query, variables, 'graph_repos_stars')
+            data = result['data']['user']['repositories']
+            
+            # Count stars from this batch
+            total_stars += self._count_stars(data['edges'])
+            
+            if not data['pageInfo']['hasNextPage']:
+                break
+                
+            cursor = data['pageInfo']['endCursor']
         
-        variables = {
-            'owner_affiliation': owner_affiliation,
-            'login': self.username,
-            'cursor': cursor
-        }
-        
-        result = self._make_request(query, variables, 'graph_repos_stars')
-        data = result['data']['user']['repositories']
-        
-        if count_type == 'repos':
-            return data['totalCount']
-        elif count_type == 'stars':
-            return self._count_stars(data['edges'])
+        return total_stars
     
     def _count_stars(self, edges: List[Dict[str, Any]]) -> int:
         """Count total stars from repository edges"""
@@ -173,9 +212,123 @@ class GitHubAPI:
     def get_lines_of_code(self, owner_affiliation: List[str], comment_size: int = 0, 
                          force_cache: bool = False, cursor: str = None, edges: List = None) -> List[int]:
         """Get lines of code statistics for repositories"""
-        # This is a complex function that would need to be implemented
-        # For now, returning placeholder data
-        return [0, 0, 0, 0, True]  # [added, deleted, total, commits, cached]
+        if edges is None:
+            # Get all repositories first
+            edges = self._get_all_repository_edges(owner_affiliation)
+        
+        total_added = 0
+        total_deleted = 0
+        total_commits = 0
+        
+        # Process repositories in batches to avoid rate limiting
+        batch_size = 10
+        for i in range(0, len(edges), batch_size):
+            batch = edges[i:i + batch_size]
+            for edge in batch:
+                repo_name = edge['node']['nameWithOwner']
+                try:
+                    # Get commit statistics for this repository
+                    repo_stats = self._get_repository_commit_stats(repo_name)
+                    total_added += repo_stats['additions']
+                    total_deleted += repo_stats['deletions']
+                    total_commits += repo_stats['commits']
+                except Exception as e:
+                    print(f"⚠️  Warning: Could not fetch stats for {repo_name}: {e}")
+                    continue
+        
+        total_loc = total_added - total_deleted
+        return [total_added, total_deleted, total_loc, total_commits, False]
+    
+    def _get_all_repository_edges(self, owner_affiliation: List[str]) -> List[Dict[str, Any]]:
+        """Get all repository edges for the user"""
+        all_edges = []
+        cursor = None
+        
+        while True:
+            query = '''
+            query ($owner_affiliation: [RepositoryAffiliation], $login: String!, $cursor: String) {
+                user(login: $login) {
+                    repositories(first: 100, after: $cursor, ownerAffiliations: $owner_affiliation) {
+                        edges {
+                            node {
+                                ... on Repository {
+                                    nameWithOwner
+                                    isFork
+                                    isArchived
+                                }
+                            }
+                        }
+                        pageInfo {
+                            endCursor
+                            hasNextPage
+                        }
+                    }
+                }
+            }'''
+            
+            variables = {
+                'owner_affiliation': owner_affiliation,
+                'login': self.username,
+                'cursor': cursor
+            }
+            
+            result = self._make_request(query, variables, 'recursive_loc')
+            data = result['data']['user']['repositories']
+            
+            # Filter out forks and archived repositories
+            filtered_edges = [
+                edge for edge in data['edges'] 
+                if not edge['node']['isFork'] and not edge['node']['isArchived']
+            ]
+            all_edges.extend(filtered_edges)
+            
+            if not data['pageInfo']['hasNextPage']:
+                break
+                
+            cursor = data['pageInfo']['endCursor']
+        
+        return all_edges
+    
+    def _get_repository_commit_stats(self, repo_name: str) -> Dict[str, int]:
+        """Get commit statistics for a specific repository"""
+        # Use GitHub REST API for commit statistics
+        rest_url = f"https://api.github.com/repos/{repo_name}/stats/participation"
+        
+        response = requests.get(rest_url, headers=self.headers)
+        if response.status_code != 200:
+            raise Exception(f"Failed to get stats for {repo_name}: {response.status_code}")
+        
+        data = response.json()
+        
+        # Calculate totals from weekly data
+        total_additions = 0
+        total_deletions = 0
+        total_commits = 0
+        
+        # Get detailed commit stats for the last year
+        commits_url = f"https://api.github.com/repos/{repo_name}/commits"
+        commits_response = requests.get(commits_url, headers=self.headers, params={'per_page': 100})
+        
+        if commits_response.status_code == 200:
+            commits_data = commits_response.json()
+            for commit in commits_data:
+                # Get detailed commit info
+                commit_sha = commit['sha']
+                commit_detail_url = f"https://api.github.com/repos/{repo_name}/commits/{commit_sha}"
+                commit_response = requests.get(commit_detail_url, headers=self.headers)
+                
+                if commit_response.status_code == 200:
+                    commit_detail = commit_response.json()
+                    if 'stats' in commit_detail:
+                        total_additions += commit_detail['stats'].get('additions', 0)
+                        total_deletions += commit_detail['stats'].get('deletions', 0)
+                        total_commits += 1
+        
+        return {
+            'additions': total_additions,
+            'deletions': total_deletions,
+            'commits': total_commits
+        }
     
     def get_query_stats(self) -> Dict[str, int]:
         """Get query count statistics"""
