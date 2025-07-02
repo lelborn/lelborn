@@ -6,6 +6,7 @@ Handles loading and validation of user configuration from JSON file
 import json
 import os
 from typing import Dict, Any
+from .utils import auto_detect_environment
 
 
 class ConfigManager:
@@ -112,6 +113,21 @@ class ConfigManager:
     def get_social_links(self) -> Dict[str, Any]:
         """Get social links section"""
         return self.config.get('social', {})
+    
+    def auto_detect_and_update_environment(self) -> None:
+        """Auto-detect environment information and update configuration"""
+        try:
+            detected_env = auto_detect_environment()
+            
+            # Update environment section
+            if 'environment' not in self.config:
+                self.config['environment'] = {}
+            
+            self.config['environment'].update(detected_env)
+            print(f"✅ Auto-detected environment: {detected_env['os']} {detected_env['version']} • {detected_env['editor']}")
+            
+        except Exception as e:
+            print(f"⚠️  Auto-detection failed: {e}")
     
     def validate_config(self) -> bool:
         """Validate that required configuration sections exist"""

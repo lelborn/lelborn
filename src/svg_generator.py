@@ -124,7 +124,7 @@ class SVGGenerator:
         content = content.replace("{AGE}", age_data)
         
         # Environment replacements
-        content = content.replace("macOS Sequoia (15.5 (24F74)) • VS Code (1.100.2)", 
+        content = content.replace("{ENVIRONMENT}", 
                                 f"{config_data['environment_os']} ({config_data['environment_version']}) • {config_data['environment_editor']}")
         
         # Packaging languages replacement

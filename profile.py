@@ -44,6 +44,9 @@ class ProfileGenerator:
             print("❌ Configuration validation failed")
             sys.exit(1)
         
+        # Auto-detect environment information
+        config.auto_detect_and_update_environment()
+        
         # Validate SVG files
         if not svg_generator.validate_svg_files():
             print("❌ SVG file validation failed")
