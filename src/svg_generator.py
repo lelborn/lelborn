@@ -66,7 +66,7 @@ class SVGGenerator:
             
             # Format the data for display
             formatted_data = self._format_data_for_svg(
-                commit_data, star_data, contrib_data, loc_data
+                commit_data, star_data, contrib_data, loc_data, repo_data
             )
             
             # Get configuration data
@@ -85,7 +85,7 @@ class SVGGenerator:
             print(f"❌ Error updating {filename}: {e}")
     
     def _format_data_for_svg(self, commit_data: int, star_data: int, 
-                            contrib_data: int, loc_data: List[int]) -> Dict[str, str]:
+                            contrib_data: int, loc_data: List[int], repo_data: int = None) -> Dict[str, str]:
         """
         Format data for SVG replacement
         """
@@ -93,6 +93,7 @@ class SVGGenerator:
             'commit_formatted': format_number(commit_data),
             'star_formatted': format_number(star_data),
             'contrib_formatted': format_number(contrib_data),
+            'repo_formatted': format_number(repo_data) if repo_data is not None else '0',
             'loc_add_formatted': format_number(loc_data[0]),
             'loc_del_formatted': format_number(loc_data[1]),
             'loc_total_formatted': format_number(loc_data[2])
@@ -124,6 +125,7 @@ class SVGGenerator:
         content = content.replace("{COMMITS}", formatted_data['commit_formatted'])
         content = content.replace("{CONTRIB}", formatted_data['contrib_formatted'])
         content = content.replace("{STARS}", formatted_data['star_formatted'])
+        content = content.replace("{REPOS}", formatted_data['repo_formatted'])
         
         # LOC replacements
         content = content.replace("{LOC_TOTAL}", formatted_data['loc_total_formatted'])
