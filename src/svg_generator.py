@@ -15,6 +15,8 @@ class SVGGenerator:
         """Initialize SVG generator"""
         self.dark_mode_file = 'profile-dark.svg'
         self.light_mode_file = 'profile-light.svg'
+        self.dark_mode_template = 'profile-dark-template.svg'
+        self.light_mode_template = 'profile-light-template.svg'
     
     def update_svg_files(self, age_data: str, commit_data: int, star_data: int, 
                         repo_data: int, contrib_data: int, follower_data: int, 
@@ -50,8 +52,16 @@ class SVGGenerator:
         Update a single SVG file with current data
         """
         try:
-            # Read the SVG file
-            with open(filename, 'r', encoding='utf-8') as f:
+            # Determine template file based on output file
+            if filename == self.light_mode_file:
+                template_file = self.light_mode_template
+            elif filename == self.dark_mode_file:
+                template_file = self.dark_mode_template
+            else:
+                template_file = filename  # fallback
+            
+            # Read the template file
+            with open(template_file, 'r', encoding='utf-8') as f:
                 content = f.read()
             
             # Format the data for display
@@ -65,12 +75,12 @@ class SVGGenerator:
             # Apply all replacements
             content = self._apply_replacements(content, formatted_data, age_data, config_data, build_timestamp)
             
-            # Write the updated content back to the file
+            # Write the updated content to the output file
             with open(filename, 'w', encoding='utf-8') as f:
                 f.write(content)
                 
         except FileNotFoundError:
-            print(f"⚠️  Warning: {filename} not found, skipping update")
+            print(f"⚠️  Warning: Template file {template_file} not found, skipping update")
         except Exception as e:
             print(f"❌ Error updating {filename}: {e}")
     
@@ -150,18 +160,18 @@ class SVGGenerator:
     
     def validate_svg_files(self) -> bool:
         """
-        Validate that required SVG files exist
+        Validate that required SVG template files exist
         """
         missing_files = []
         
-        if not self._file_exists(self.dark_mode_file):
-            missing_files.append(self.dark_mode_file)
+        if not self._file_exists(self.dark_mode_template):
+            missing_files.append(self.dark_mode_template)
         
-        if not self._file_exists(self.light_mode_file):
-            missing_files.append(self.light_mode_file)
+        if not self._file_exists(self.light_mode_template):
+            missing_files.append(self.light_mode_template)
         
         if missing_files:
-            print(f"❌ Missing required SVG files: {', '.join(missing_files)}")
+            print(f"❌ Missing required SVG template files: {', '.join(missing_files)}")
             return False
         
         return True

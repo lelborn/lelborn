@@ -101,28 +101,34 @@ class ProfileGenerator:
         # Get repository statistics
         data['stars'], star_time = self._get_repository_stats('stars', ['OWNER'])
         self.performance_times['stars'] = star_time
+        print(f"DEBUG: Stars: {data['stars']}")
         
         data['repos'], repo_time = self._get_repository_stats('repos', ['OWNER'])
         self.performance_times['repos'] = repo_time
+        print(f"DEBUG: Repos: {data['repos']}")
         
         data['contrib_repos'], contrib_time = self._get_repository_stats('repos', 
                                                                        ['OWNER', 'COLLABORATOR', 'ORGANIZATION_MEMBER'])
         self.performance_times['contrib_repos'] = contrib_time
+        print(f"DEBUG: Contributed Repos: {data['contrib_repos']}")
         
         # Get follower count
         data['followers'], follower_time = measure_performance(github_api.get_follower_count)
         self.performance_times['followers'] = follower_time
         format_performance_output('followers', follower_time)
+        print(f"DEBUG: Followers: {data['followers']}")
         
         # Get lines of code from GitHub API
         data['loc_data'], loc_time = measure_performance(self._get_lines_of_code)
         self.performance_times['lines_of_code'] = loc_time
         format_performance_output('lines of code', loc_time)
+        print(f"DEBUG: LOC Data: {data['loc_data']}")
         
         # Get commit count from GitHub API
         data['commits'], commit_time = measure_performance(self._get_commit_count)
         self.performance_times['commits'] = commit_time
         format_performance_output('commits', commit_time)
+        print(f"DEBUG: Commits: {data['commits']}")
         
         return data
     
