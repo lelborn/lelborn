@@ -9,7 +9,7 @@
     "editor": "VS Code (1.100.2)"
   },
   "packaging_languages": {
-    "languages": ["HTML", "CSS", "JavaScript", "TypeScript", "Python", "React", "..."]
+    "languages": ["HTML", "CSS", "JavaScript", "TypeScript", "Python", "React"]
   },
   "server_region": {
     "region": "Europe/London"

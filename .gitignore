@@ -31,5 +31,6 @@ htmlcov/
 # VS Code settings
 .vscode/
 
-# Profile repo cache
-cache/
+# Profile repo cache (keep directory but ignore contents)
+cache/*
+!cache/.gitkeep

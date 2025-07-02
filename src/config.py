@@ -6,7 +6,7 @@ Handles loading and validation of user configuration from JSON file
 import json
 import os
 from typing import Dict, Any
-from .utils import auto_detect_environment
+from .system_detection import auto_detect_environment
 
 
 class ConfigManager:

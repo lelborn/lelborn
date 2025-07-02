@@ -1,0 +1,2 @@
+# This file ensures the cache directory is tracked by git
+# The directory is used by the profile generator for temporary data 

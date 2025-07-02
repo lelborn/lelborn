@@ -11,8 +11,19 @@ from .utils import (
     format_number,
     measure_performance,
     format_performance_output,
-    ensure_directory_exists,
     generate_build_timestamp
+)
+from .file_ops import (
+    ensure_directory_exists,
+    safe_file_read,
+    safe_file_write
+)
+from .system_detection import (
+    detect_os_info,
+    detect_editor,
+    get_editor_version,
+    get_system_info,
+    auto_detect_environment
 )
 
 __version__ = "2.0.0"
@@ -30,6 +41,13 @@ __all__ = [
     'format_number',
     'measure_performance',
     'format_performance_output',
+    'generate_build_timestamp',
     'ensure_directory_exists',
-    'generate_build_timestamp'
+    'safe_file_read',
+    'safe_file_write',
+    'detect_os_info',
+    'detect_editor',
+    'get_editor_version',
+    'get_system_info',
+    'auto_detect_environment'
 ] 
