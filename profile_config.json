@@ -1,0 +1,26 @@
+{
+  "_comment": "Fields marked with 'auto' are automatically sourced from GitHub API. You can override them here if needed.",
+  "personal": {
+    "birthday": "1990-12-15"
+  },
+  "environment": {
+    "os": "macOS Sequoia",
+    "version": "15.5 (24F74)",
+    "editor": "VS Code (1.100.2)"
+  },
+  "packaging_languages": {
+    "languages": ["TypeScript", "Python", "Go", "React"]
+  },
+  "server_region": {
+    "region": "Europe/London"
+  },
+  "host": {
+    "platform": "Marketplace Platforms"
+  },
+  "social": {
+    "linkedin": "linkedin.com/lewiselborn",
+    "twitter": "twitter.com/lelborn",
+    "website": "lewiselborn.com",
+    "email": "lewis@lewiselborn.com"
+  }
+} 
