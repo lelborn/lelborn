@@ -122,10 +122,17 @@ def safe_file_write(file_path: str, content: str) -> None:
 
 def generate_build_timestamp() -> str:
     """
-    Generate a build timestamp in UTC (GMT+0) in the format used by terminal 'last login'
+    Generate a build timestamp in BST (British Summer Time) in the format used by terminal 'last login'
     e.g., 'Tue Jun 3 14:01:52'
     """
-    return datetime.datetime.utcnow().strftime("%a %b %-d %H:%M:%S")
+    # Get current time in UTC
+    utc_time = datetime.datetime.utcnow()
+    
+    # Convert to BST (UTC+1 during summer time)
+    # Note: This is a simplified approach - for production use, consider using pytz or zoneinfo
+    bst_time = utc_time + datetime.timedelta(hours=1)
+    
+    return bst_time.strftime("%a %b %-d %H:%M:%S")
 
 
 def detect_os_info() -> Tuple[str, str]:
