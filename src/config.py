@@ -116,6 +116,12 @@ class ConfigManager:
     
     def auto_detect_and_update_environment(self) -> None:
         """Auto-detect environment information and update configuration"""
+        # Skip auto-detection if running in GitHub Actions to preserve local environment info
+        # This ensures the SVG shows your local environment (macOS) instead of the GitHub Actions runner (Ubuntu)
+        if os.getenv('GITHUB_ACTIONS') == 'true':
+            print("🔄 Running in GitHub Actions - preserving local environment configuration")
+            return
+        
         try:
             detected_env = auto_detect_environment()
             
