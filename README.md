@@ -1,4 +1,4 @@
-# Hi there, I'm Lewis Elborn 👋
+# Hi there, I'm Lewis. 👋
 
 <a href="https://github.com/lelborn">
   <picture>
