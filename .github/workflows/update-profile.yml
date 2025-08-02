@@ -48,4 +48,5 @@ jobs:
           git add profile-*.svg README.md
           git diff --cached --quiet || git commit -m "Update README and SVG"
           git remote set-url origin https://x-access-token:$ACCESS_TOKEN@github.com/${GITHUB_REPOSITORY}
+          git pull origin main --rebase
           git push origin HEAD:main
